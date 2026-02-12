@@ -57,8 +57,8 @@ PAPERS_YEAR_PATH = DATA_DIR / "papers_year_mapping.csv"
 CONCEPT_MAP_PATH = DATA_DIR / "papers_concepts_mapping.csv"
 VOCAB_PATH = DATA_DIR / "concepts_vocabulary.csv"
 
-PO_AGG_PATH = DATA_DIR / "paper_object_edges_llm_v2_agg.parquet"
-PO_MENTIONS_PATH = DATA_DIR / "paper_object_edges_llm_v2_mentions.jsonl"
+PO_AGG_PATH = DATA_DIR / "paper_object_edges_llm_agg.parquet"
+PO_MENTIONS_PATH = DATA_DIR / "paper_object_edges_llm_mentions.jsonl"
 
 ALIAS_CACHE_PATH = DATA_DIR / "simbad_alias_cache.jsonl"  # optional
 NAME_CACHE_PATH = DATA_DIR / "simbad_name_resolution_cache_llm_objects_with_otype_and_errors_clean.jsonl"
@@ -116,8 +116,8 @@ def apply_config(cfg: dict, *, cfg_dir: Path | None = None) -> None:
     CONCEPT_MAP_PATH = resolve_file(cfg_get(cfg, "paths.concept_map", "papers_concepts_mapping.csv"), base_dir=DATA_DIR)
     VOCAB_PATH = resolve_file(cfg_get(cfg, "paths.concept_vocab", "concepts_vocabulary.csv"), base_dir=DATA_DIR)
 
-    PO_AGG_PATH = resolve_file(cfg_get(cfg, "paths.po_agg", "paper_object_edges_llm_v2_agg.parquet"), base_dir=DATA_DIR)
-    PO_MENTIONS_PATH = resolve_file(cfg_get(cfg, "paths.po_mentions", "paper_object_edges_llm_v2_mentions.jsonl"), base_dir=DATA_DIR)
+    PO_AGG_PATH = resolve_file(cfg_get(cfg, "paths.po_agg", "paper_object_edges_llm_agg.parquet"), base_dir=DATA_DIR)
+    PO_MENTIONS_PATH = resolve_file(cfg_get(cfg, "paths.po_mentions", "paper_object_edges_llm_mentions.jsonl"), base_dir=DATA_DIR)
 
     NAME_CACHE_PATH = resolve_file(
         cfg_get(cfg, "paths.simbad_name_cache", "simbad_name_resolution_cache_llm_objects_with_otype_and_errors_clean.jsonl"),
@@ -291,7 +291,7 @@ _SIMBAD_READY: bool = False
 def load_simbad_caches(
     alias_cache_path: Path = ALIAS_CACHE_PATH, name_cache_path: Path = NAME_CACHE_PATH
 ) -> None:
-    """Populate alias2main/name2main/otype_by_main using v2-style caches."""
+    """Populate alias2main/name2main/otype_by_main using caches."""
     global alias2main, name2main, otype_by_main, _SIMBAD_READY
 
     alias2main = {}
