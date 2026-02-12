@@ -9,8 +9,8 @@ paths:
   concept_vocab: concepts_vocabulary.csv
   concept_embeddings: concepts_embeddings.npz
 
-  po_agg: paper_object_edges_llm_v2_agg.parquet
-  po_mentions: paper_object_edges_llm_v2_mentions.jsonl
+  po_agg: paper_object_edges_llm_agg.parquet
+  po_mentions: paper_object_edges_llm_mentions.jsonl
 
   simbad_name_cache: simbad_name_resolution_cache_llm_objects_with_otype_and_errors_clean.jsonl
   simbad_alias_cache: null
