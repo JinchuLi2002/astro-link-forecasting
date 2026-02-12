@@ -1,5 +1,9 @@
 # Astro Link Forecasting
 
+TODO: 
+1. Add the data files.
+2. Add the code of LLM extraction & SIMBAD resolution
+
 This repository accompanies the paper:
 
 **Predicting New Concept–Object Associations in Astronomy by Mining the Literature**
