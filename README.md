@@ -227,10 +227,6 @@ study_filter: all
 
 ### `noreg`
 
-```yaml
-noreg: true
-```
-
 When enabled, objects classified as sky regions or fields (based on SIMBAD object type metadata) are excluded.
 
 This prevents non-physical spatial regions (e.g., survey fields) from behaving like astrophysical objects.
