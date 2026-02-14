@@ -110,11 +110,13 @@ paper_object_edges_llm_mentions.jsonl
 
 ### weights
 
-Controls edge construction:
+Edge weights are computed as:
 
-\[
-w_{c,o} = \log\left(1 + \sum_m \rho_{r(m)} \gamma_{\sigma(m)}\right)
-\]
+w(c,o) = log(1 + Σ_m ρ_r(m) × γ_σ(m))
+
+where:
+- ρ_r(m) is the role weight
+- γ_σ(m) is the study-mode multiplier
 
 Users may modify:
 
