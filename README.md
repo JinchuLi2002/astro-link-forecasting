@@ -1,3 +1,4 @@
+```markdown
 # Astro Link Forecasting
 
 This repository accompanies the paper:
@@ -11,21 +12,22 @@ The core scientific task is:
 > Given a cutoff year *T*, train on all concept–object associations observed up to *T*,  
 > and evaluate how well different methods rank objects whose association first appears after *T*.
 
-The default configuration produces both:
-- Results **with inference-time concept smoothing** (main results in the paper), and  
-- Results **without smoothing**.
+The default configuration reproduces both:
+
+- Results **with inference-time concept smoothing** (main paper results)
+- Results **without smoothing**
 
 ---
 
 # 1. Repository Overview
 
-This repository implements the complete forecasting workflow described in the paper:
+This repository implements the complete forecasting workflow:
 
-1. Construction of temporal train/test splits
-2. Concept–object graph assembly from literature-derived data
-3. Concept embedding neighbor construction for smoothing and embedding-based baselines
-4. Training and evaluation of forecasting methods
-5. Stratified metric aggregation
+1. Construction of temporal Mode B train/test splits  
+2. Concept–object graph assembly from literature-derived data  
+3. Concept-embedding neighbor construction (for smoothing and embedding-based baselines)  
+4. Training and evaluation of forecasting methods  
+5. Stratified metric aggregation  
 
 ---
 
@@ -50,19 +52,20 @@ This repository does not redistribute AstroMLab 5 data.
 
 ## Object Extraction Data (This Work)
 
-This repository expects LLM-extracted paper–object mention data:
+This repository expects mention-level LLM object extraction data:
 
 - `paper_object_edges_llm_mentions.jsonl`
 - SIMBAD name resolution cache (`simbad_name_resolution_cache_*.jsonl`)
 
-These files contain:
+Each JSONL row represents a single object mention in a paper, including:
 
-- extracted object mentions
-- semantic role labels
-- study-mode labels
-- SIMBAD-resolved canonical object IDs
+- normalized object name
+- semantic role
+- study mode
+- resolved SIMBAD identifier
 
-All concept–object edges and weights used in experiments are generated from mention-level JSONL inputs and configuration-defined weighting rules. No precomputed weighted graph is required.
+All concept–object edges and weights are generated dynamically from these mention-level inputs.  
+No precomputed weighted graph is required.
 
 ---
 
@@ -90,35 +93,18 @@ config/table1.yaml
 
 ---
 
-## Configuration Reference
-
-### paths
-
-Defines:
-
-- input data directory
-- output directory
-- filenames for required inputs
-
-All object–concept edges are constructed dynamically from:
-
-```
-paper_object_edges_llm_mentions.jsonl
-```
-
----
-
-### weights
+## Edge Weight Construction
 
 Edge weights are computed as:
 
 w(c,o) = log(1 + Σ_m ρ_r(m) × γ_σ(m))
 
 where:
-- ρ_r(m) is the role weight
-- γ_σ(m) is the study-mode multiplier
 
-Users may modify:
+- ρ_r(m) = role weight  
+- γ_σ(m) = study-mode multiplier  
+
+Weights are configurable under:
 
 ```yaml
 weights:
@@ -126,53 +112,107 @@ weights:
   study_mode_mult:
 ```
 
-and regenerate the graph.
+Changing these values changes the underlying graph and therefore the scientific question being evaluated.
 
 ---
 
-### edge_configs
+## Edge Configuration (Important)
 
-Controls:
+Edge construction is controlled by:
 
-- role filtering
-- study filtering
-- weighting scheme
-- per-paper normalization
-- caching behavior
+```yaml
+edge_configs:
+  train:
+  target:
+```
+
+These control:
+
+- role filtering (`role_filter`)
+- study filtering (`study_filter`)
+- weighting scheme (`weighting`)
+- per-paper normalization (`paper_norm`)
+- region exclusion (`noreg`)
+- mention-level reconstruction (`force_mentions_jsonl`)
+
+### Recommended Setting (Reproduces the Paper)
+
+To reproduce the published results:
+
+```yaml
+role_filter: all
+study_filter: all
+weighting: role_x_mode
+paper_norm: none
+noreg: true
+```
+
+The evaluation assumes:
+
+- Train and target graphs are built under identical edge semantics
+- Only temporal cutoff defines the split
+- Stratification is applied after graph construction
 
 ---
 
-### cutoffs
+## Train vs. Target Configuration
+
+The pipeline allows different configs for `train` and `target`, but this is **not recommended** for standard forecasting experiments.
+
+Using different filters may:
+
+- Change which edges count as "seen"
+- Alter eligibility criteria
+- Introduce distribution shift
+- Create evaluation artifacts
+
+For scientific clarity and reproducibility, keep:
+
+```yaml
+edge_configs.train == edge_configs.target
+```
+
+---
+
+## Stratified Evaluation
+
+Stratification (via `output.strata_to_report`) determines which concepts are included in reported metrics.
 
 Example:
+
+```yaml
+output:
+  strata_to_report:
+    - physical_subset_excl_stats_sim_instr
+```
+
+Important:
+
+- The graph is constructed over the full concept universe.
+- Stratification only affects reporting.
+- No held-out information is used during graph construction.
+
+Training on all concepts and reporting on a subset (e.g., physical concepts) is valid and used in the paper.
+
+---
+
+## Other Key Config Fields
+
+### cutoffs
 
 ```yaml
 cutoffs: [2017, 2019, 2021, 2023]
 ```
 
----
+Temporal evaluation years.
 
 ### min_train_pos
 
-Minimum number of training associations required for a concept to be evaluated.
-
----
-
-### knn
-
-Neighborhood sizes and similarity parameters.
-
----
+Minimum number of prior associations required for a concept to be evaluated.
 
 ### smoothing
 
-Inference-time concept smoothing parameters:
-
-\[
-s_{smooth}(c,o) = (1-\lambda)s(c,o) + \lambda \sum_{c'} S_{c,c'} s(c',o)
-\]
-
----
+Inference-time concept smoothing parameters.
 
 ### als
 
@@ -184,23 +224,7 @@ Implicit ALS hyperparameters:
 - alpha
 - seeds
 
-To reproduce full paper averages, use multiple seeds.
-
----
-
-### methods
-
-Enable or disable forecasting methods.
-
----
-
-### output
-
-Defines:
-
-- output subdirectory
-- which strata to report
-- CSV export path
+To reproduce paper averages, use multiple seeds.
 
 ---
 
@@ -212,13 +236,13 @@ From the repository root:
 bash scripts/reproduce_table1.sh config/table1.yaml
 ```
 
-This executes:
+This runs:
 
 1. `prepare_cutoff.py`
 2. `smoothing.py`
 3. `train_eval.py`
 
-Outputs are written to:
+Outputs:
 
 ```
 OUT_DIR/
@@ -234,15 +258,18 @@ OUT_DIR/
 
 ---
 
-# 6. Reproducibility
+# 6. Reproducibility Guarantees
 
-- Graph construction is fully reproducible from mention-level JSONL inputs.
-- Weighting is config-defined.
+- Graph construction is deterministic given config.
 - Temporal splits follow strict Mode B semantics.
+- Weighting is config-defined.
 - No pre-aggregated graph artifacts are required.
+
+Altering edge construction changes the scientific object of study and should be clearly documented in derived experiments.
 
 ---
 
 # 7. Citation
 
 (placeholder — add citation after review period)
+```
