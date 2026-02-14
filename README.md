@@ -220,7 +220,7 @@ Important considerations:
 - This subset is heuristic and based on crude text matching.
 - It overlaps substantially with the `nonphysical_only_stats_sim_instr` subset.
 - It is not reported as a headline result in the paper.
-- Empirically, performance on this subset is similar to or weaker than the physical subset.
+- Empirically, performance on this subset is similar to `nonphysical_only_stats_sim_instr` and is weaker than the physical subset.
 
 It is included primarily for diagnostic and exploratory analysis rather than as a primary evaluation target.
 
